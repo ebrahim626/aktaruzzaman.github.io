@@ -99,7 +99,7 @@ h1 span{color:var(--ac)}
 .pc{padding:0;overflow:hidden;cursor:pointer;transition:transform .25s,border-color .25s;text-align:left;color:inherit;font:inherit;width:100%}
 .pc:hover{transform:translateY(-5px);border-color:var(--ac)}
 .pv{aspect-ratio:1280/769;background:#141519;overflow:hidden;border-bottom:1px solid var(--line)}
-.pv img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.pv img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .5s,opacity .6s}
 .pc:hover .pv img{transform:scale(1.04)}
 .di{display:block;width:100%;height:auto;border-radius:14px;border:1px solid var(--line);margin:0 0 20px}
 .mini{width:104px;height:190px;border-radius:18px 18px 0 0;border:1px solid #3a3e48;border-bottom:0;background:#0f1013;padding:14px 9px;display:flex;flex-direction:column;gap:7px;transition:transform .3s}
@@ -151,7 +151,7 @@ footer h2{font-size:clamp(26px,3.6vw,38px)}footer p{color:var(--mut);max-width:5
 
 .lg{display:block;position:relative;border-radius:24px;border:1px solid var(--line);overflow:hidden;background:#222;aspect-ratio:900/500;transition:border-color .4s,box-shadow .4s,transform .4s}
 .lg .im{position:absolute;inset:0;transition:clip-path 1.1s cubic-bezier(.7,0,.2,1)}
-.lg .im img{display:block;width:100%;height:100%;object-fit:cover;transform:scale(1.02);transition:transform .9s cubic-bezier(.2,.8,.2,1),filter .6s}
+.lg .im img{display:block;width:100%;height:100%;object-fit:cover;transform:scale(1.02);transition:transform .9s cubic-bezier(.2,.8,.2,1),filter .6s,opacity .6s}
 .lg.rv .im{clip-path:inset(0 0 0 100%)}.lg.rv.in .im{clip-path:inset(0)}
 .lg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(11,13,20,.88));opacity:0;transition:opacity .45s}
 .lg .cap{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 26px;transform:translateY(24px);opacity:0;transition:transform .5s cubic-bezier(.2,.8,.2,1),opacity .4s}
@@ -201,8 +201,15 @@ body:has(dialog[open]){overflow:hidden}
  .links.o{display:flex}.links a.l{padding:14px 0;font-size:16px;border-bottom:1px solid var(--line)}.links .btn{margin-top:14px}
 }
 @media(max-width:560px){.sk,.sv{grid-template-columns:minmax(0,1fr)}.sk .big,.sv .card,.sv .card.dv,.sv .card.wide{grid-column:auto}.st{grid-template-columns:1fr 1fr}.cta .btn{flex:1 1 100%}}
+/* image loading: shimmer placeholder, then fade-in */
+.lg,.pv,.av,.di{background:linear-gradient(100deg,#191b20 35%,#2b2f38 50%,#191b20 65%) 0 0/250% 100%;animation:shim 1.5s linear infinite}
+.ld-ok{animation:none!important}
+img[data-img]:not(.di),.av img{opacity:0;transition:opacity .6s ease}
+img[data-img].ld,.av img.ld{opacity:1}
+@keyframes shim{to{background-position:-150% 0}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}.rv{opacity:1;transform:none}}
 </style>
+<noscript><style>img[data-img],.av img{opacity:1!important}.lg,.pv,.av,.di{animation:none!important}</style></noscript>
 </head>
 <body>
 <nav><div class="wrap">
@@ -434,6 +441,8 @@ var bg=document.getElementById('bg'),lk=document.getElementById('lk');
 bg.onclick=function(){var o=lk.classList.toggle('o');bg.setAttribute('aria-expanded',o)};
 lk.addEventListener('click',function(e){if(e.target.tagName==='A'){lk.classList.remove('o');bg.setAttribute('aria-expanded','false')}});
 var IMG={k:'images/kitchennmbrs.webp',d:'images/drivers-lesson.webp',l:'images/liasoft-logo.webp',t:'images/treesoft-logo.webp',c:'images/the-city-media.webp',h:'images/harsh-logo.webp',x:'images/tkt-uiux.webp',u:'images/treesoft-uiux.webp',b:'images/btalk-uiux.webp',r:'images/brightstar-uiux.webp',p1:'images/post-penguin.webp',p2:'images/post-bikes.webp',p3:'images/post-icecream.webp',p4:'images/post-burger.webp'};
+document.querySelectorAll('img[data-img],.av img').forEach(function(im){var box=im.closest('.lg,.pv,.av')||im;function ok(){im.classList.add('ld');box.classList.add('ld-ok')}
+ if(im.complete&&im.naturalWidth)ok();else{im.addEventListener('load',ok);im.addEventListener('error',ok)}});
 // project dialogs
 document.querySelectorAll('[data-m]').forEach(function(b){b.onclick=function(){document.getElementById(b.dataset.m).showModal()}});
 document.querySelectorAll('dialog').forEach(function(d){

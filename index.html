@@ -40,7 +40,14 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;height:6
 .links a.l::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;border-radius:2px;background:var(--ac);transform:scaleX(0);transition:transform .3s}
 .links a.l:hover,.links a.l.on{color:var(--ac)}
 .links a.l.on::after{transform:scaleX(1)}
-.burger{display:none;background:none;border:1px solid var(--line);color:var(--tx);width:44px;height:44px;border-radius:12px;font-size:20px;cursor:pointer}
+.burger{display:none;position:relative;background:none;border:1px solid var(--line);color:var(--tx);width:44px;height:44px;border-radius:12px;cursor:pointer;transition:border-color .2s,background .2s}
+.burger span{position:absolute;left:12px;right:12px;height:2px;border-radius:2px;background:var(--tx);transition:transform .3s,opacity .2s,top .3s}
+.burger span:nth-child(1){top:14px}.burger span:nth-child(2){top:20px}.burger span:nth-child(3){top:26px}
+.burger[aria-expanded="true"]{border-color:var(--ac);background:var(--acs)}
+.burger[aria-expanded="true"] span:nth-child(1){top:20px;transform:rotate(45deg)}
+.burger[aria-expanded="true"] span:nth-child(2){opacity:0}
+.burger[aria-expanded="true"] span:nth-child(3){top:20px;transform:rotate(-45deg)}
+.scrim{display:none}
 /* hero */
 .hero{padding:150px 0 90px;position:relative;overflow:hidden}
 .hero::before{content:"";position:absolute;width:640px;height:640px;right:-180px;top:-120px;background:radial-gradient(circle,rgba(109,139,255,.2),transparent 65%);pointer-events:none}
@@ -197,8 +204,17 @@ body:has(dialog[open]){overflow:hidden}
  .sk{grid-template-columns:1fr 1fr}.sk .big{grid-column:span 2;grid-row:auto}
  .sv .card,.sv .card.dv{grid-column:span 3}.ct{gap:34px}
  .burger{display:block}
- .links{position:absolute;top:100%;left:0;right:0;background:var(--bg);border-bottom:1px solid var(--line);flex-direction:column;align-items:stretch;gap:0;padding:8px 24px 18px;display:none}
- .links.o{display:flex}.links a.l{padding:14px 0;font-size:16px;border-bottom:1px solid var(--line)}.links .btn{margin-top:14px}
+ nav.open{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(18,19,22,.55)}
+ .scrim{display:block;position:fixed;inset:0;z-index:15;background:rgba(6,7,10,.55);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+ .scrim.o{opacity:1;visibility:visible;transition-delay:0s}
+ .links{position:absolute;top:calc(100% + 8px);left:12px;right:12px;display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:10px;background:rgba(24,26,32,.62);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid rgba(255,255,255,.12);border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.5);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-10px) scale(.97);transform-origin:top right;transition:opacity .25s,transform .35s cubic-bezier(.2,.8,.2,1),visibility 0s .35s}
+ .links.o{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition-delay:0s}
+ .links a.l{display:flex;align-items:center;gap:14px;min-height:52px;padding:0 16px;border-radius:14px;font-size:17px;color:var(--tx);transition:background .2s,color .2s}
+ .links a.l::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.22);transition:background .2s,transform .2s}
+ .links a.l:active{background:rgba(255,255,255,.08)}
+ .links a.l.on{background:var(--acs);color:var(--ac);font-weight:500}
+ .links a.l.on::before{background:var(--ac);transform:scale(1.35)}
+ .links .btn{margin:8px 0 2px;min-height:52px}
 }
 @media(max-width:560px){.sk,.sv{grid-template-columns:minmax(0,1fr)}.sk .big,.sv .card,.sv .card.dv,.sv .card.wide{grid-column:auto}.st{grid-template-columns:1fr 1fr}.cta .btn{flex:1 1 100%}}
 /* image loading: shimmer placeholder, then fade-in */
@@ -212,9 +228,10 @@ img[data-img].ld,.av img.ld{opacity:1}
 <noscript><style>img[data-img],.av img{opacity:1!important}.lg,.pv,.av,.di{animation:none!important}</style></noscript>
 </head>
 <body>
-<nav><div class="wrap">
+<div class="scrim" id="sc"></div>
+<nav id="nv"><div class="wrap">
  <a class="logo" href="#home">Aktaruzzaman<i>.</i></a>
- <button class="burger" id="bg" aria-label="Open menu" aria-expanded="false">☰</button>
+ <button class="burger" id="bg" aria-label="Open menu" aria-expanded="false" aria-controls="lk"><span></span><span></span><span></span></button>
  <div class="links" id="lk">
   <a class="l" href="#home">Home</a><a class="l" href="#about">About</a><a class="l" href="#skills">Skills</a><a class="l" href="#services">Services</a><a class="l" href="#projects">Projects</a><a class="l" href="#experience">Experience</a><a class="l" href="#design">Design</a>
   <a class="btn p s" href="#contact">Let's Talk</a>
@@ -437,9 +454,13 @@ img[data-img].ld,.av img.ld{opacity:1}
 
 <script>
 // mobile menu
-var bg=document.getElementById('bg'),lk=document.getElementById('lk');
-bg.onclick=function(){var o=lk.classList.toggle('o');bg.setAttribute('aria-expanded',o)};
-lk.addEventListener('click',function(e){if(e.target.tagName==='A'){lk.classList.remove('o');bg.setAttribute('aria-expanded','false')}});
+var bg=document.getElementById('bg'),lk=document.getElementById('lk'),sc=document.getElementById('sc'),nv=document.getElementById('nv');
+function menu(o){lk.classList.toggle('o',o);sc.classList.toggle('o',o);nv.classList.toggle('open',o);bg.setAttribute('aria-expanded',o);bg.setAttribute('aria-label',o?'Close menu':'Open menu')}
+bg.onclick=function(){menu(!lk.classList.contains('o'))};
+sc.onclick=function(){menu(false)};
+lk.addEventListener('click',function(e){if(e.target.closest('a'))menu(false)});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')menu(false)});
+window.addEventListener('resize',function(){if(innerWidth>900)menu(false)});
 var IMG={k:'images/kitchennmbrs.webp',d:'images/drivers-lesson.webp',l:'images/liasoft-logo.webp',t:'images/treesoft-logo.webp',c:'images/the-city-media.webp',h:'images/harsh-logo.webp',x:'images/tkt-uiux.webp',u:'images/treesoft-uiux.webp',b:'images/btalk-uiux.webp',r:'images/brightstar-uiux.webp',p1:'images/post-penguin.webp',p2:'images/post-bikes.webp',p3:'images/post-icecream.webp',p4:'images/post-burger.webp'};
 document.querySelectorAll('img[data-img],.av img').forEach(function(im){var box=im.closest('.lg,.pv,.av')||im;function ok(){im.classList.add('ld');box.classList.add('ld-ok')}
  if(im.complete&&im.naturalWidth)ok();else{im.addEventListener('load',ok);im.addEventListener('error',ok)}});
